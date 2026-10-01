@@ -1,0 +1,22 @@
+# Heavy, downloaded, or generated directories
+orig/
+tools/
+logs/
+backups/
+ghidra/projects/
+ghidra/exports/
+recon/raw/
+build/*
+!build/.gitkeep
+
+# Archives and disc images
+*.7z
+*.iso
+*.cso
+*.bin
+*.prx
+
+# Temporary or system files
+.DS_Store
+*.tmp
+*~

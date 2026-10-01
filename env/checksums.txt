@@ -1,0 +1,2 @@
+# Checksums de referencia para verificación de integridad (sha256sum)
+# Archivos del proyecto

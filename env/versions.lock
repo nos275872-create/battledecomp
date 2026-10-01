@@ -1,0 +1,9 @@
+# versions.lock — Registro de versiones de herramientas del proyecto
+OS=Ubuntu 24.04 LTS x86_64
+JAVA=openjdk 21.0.12.1
+PYTHON=Python 3.12.3
+GIT=git version 2.43.0
+MAKE=GNU Make 4.3
+GCC=gcc 13.3.0
+GHIDRA=12.1.4_PUBLIC (/opt/ghidra_12.1.4_PUBLIC)
+SEVENZIP=7-Zip 23.01
