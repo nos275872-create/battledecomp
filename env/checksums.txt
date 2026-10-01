@@ -1,2 +1,3 @@
 # Checksums de referencia para verificación de integridad (sha256sum)
 # Archivos del proyecto
+7e0938f26c677c49a20fff92dce3d5f9c9a553ca1d3885683ea0adf787184deb  orig/bin/EBOOT.BIN

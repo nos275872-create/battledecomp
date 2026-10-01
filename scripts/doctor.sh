@@ -72,6 +72,24 @@ else
     check_status "Ghidra" 1 "No encontrado"
 fi
 
+if [ -d "/opt/ghidra_12.1.4_PUBLIC/Ghidra/Processors/Allegrex" ]; then
+    check_status "Ghidra Módulo Allegrex" 0 "Instalado (Allegrex:LE:32:default)"
+else
+    check_status "Ghidra Módulo Allegrex" 1 "No instalado"
+fi
+
+if [ -x "${TOOLS_DIR}/bin/pspdecrypt" ]; then
+    check_status "Herramienta pspdecrypt" 0 "Compilado y disponible"
+else
+    check_status "Herramienta pspdecrypt" 1 "Falta compilar o instalar"
+fi
+
+if [ -f "${ORIG_DIR}/bin/EBOOT.BIN" ]; then
+    check_status "Ejecutable EBOOT.BIN descifrado" 0 "Presente en orig/bin/EBOOT.BIN"
+else
+    check_status "Ejecutable EBOOT.BIN descifrado" 1 "Ausente"
+fi
+
 echo ""
 echo "--- 4. Estado de Git ---"
 if [ -d "${ROOT_DIR}/.git" ]; then
