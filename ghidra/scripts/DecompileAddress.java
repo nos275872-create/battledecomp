@@ -21,42 +21,10 @@ public class DecompileAddress extends GhidraScript {
             return;
         }
 
-        String addrStr = args[0];
-        Address addr = toAddr(addrStr);
-        if (addr == null) {
-            printerr("Dirección inválida: " + addrStr);
-            return;
-        }
-
-        Function func = currentProgram.getFunctionManager().getFunctionAt(addr);
-        if (func == null) {
-            func = currentProgram.getFunctionManager().getFunctionContaining(addr);
-        }
-        if (func == null) {
-            println("Creando función en " + addr.toString() + "...");
-            func = createFunction(addr, "func_" + addrStr);
-        }
-
-        if (func == null) {
-            printerr("No se pudo obtener ni crear función en: " + addrStr);
-            return;
-        }
-
-        println("Decompilando: " + func.getName() + " en " + func.getEntryPoint());
-
         DecompInterface decomp = new DecompInterface();
         decomp.setOptions(new DecompileOptions());
         boolean openOk = decomp.openProgram(currentProgram);
         println("DecompInterface openProgram: " + openOk);
-
-        DecompileResults res = decomp.decompileFunction(func, 60, monitor);
-
-        if (!res.decompileCompleted()) {
-            printerr("Fallo de decompilación. Error=" + res.getErrorMessage());
-            return;
-        }
-
-        String cCode = res.getDecompiledFunction().getC();
 
         File ghidraDir = getProjectRootFolder().getProjectLocator().getProjectDir().getParentFile().getParentFile();
         File outDir = new File(ghidraDir, "exports/decompiled");
@@ -64,15 +32,48 @@ public class DecompileAddress extends GhidraScript {
             outDir.mkdirs();
         }
 
-        File outFile = new File(outDir, func.getName() + "_" + addrStr + ".c");
-        PrintWriter pw = new PrintWriter(outFile);
-        pw.println("// Decompilación generada por Ghidra Allegrex");
-        pw.println("// Dirección: " + func.getEntryPoint().toString());
-        pw.println("// Función: " + func.getName());
-        pw.println();
-        pw.print(cCode);
-        pw.close();
+        for (String addrStr : args) {
+            Address addr = toAddr(addrStr);
+            if (addr == null) {
+                printerr("Dirección inválida: " + addrStr);
+                continue;
+            }
 
-        println("Código decompilado guardado en: " + outFile.getAbsolutePath());
+            Function func = currentProgram.getFunctionManager().getFunctionAt(addr);
+            if (func == null) {
+                func = currentProgram.getFunctionManager().getFunctionContaining(addr);
+            }
+            if (func == null) {
+                println("Creando función en " + addr.toString() + "...");
+                func = createFunction(addr, "func_" + addrStr);
+            }
+
+            if (func == null) {
+                printerr("No se pudo obtener ni crear función en: " + addrStr);
+                continue;
+            }
+
+            println("Decompilando: " + func.getName() + " en " + func.getEntryPoint());
+
+            DecompileResults res = decomp.decompileFunction(func, 60, monitor);
+
+            if (!res.decompileCompleted()) {
+                printerr("Fallo de decompilación para " + addrStr + ". Error=" + res.getErrorMessage());
+                continue;
+            }
+
+            String cCode = res.getDecompiledFunction().getC();
+
+            File outFile = new File(outDir, func.getName() + "_" + addrStr + ".c");
+            PrintWriter pw = new PrintWriter(outFile);
+            pw.println("// Decompilación generada por Ghidra Allegrex");
+            pw.println("// Dirección: " + func.getEntryPoint().toString());
+            pw.println("// Función: " + func.getName());
+            pw.println();
+            pw.print(cCode);
+            pw.close();
+
+            println("Código decompilado guardado en: " + outFile.getAbsolutePath());
+        }
     }
 }
