@@ -2,27 +2,45 @@
 
 - **Qué hace en el juego:** Controla el comportamiento autónomo de soldados y droides en combates individuales y multijugador local (Adhoc) e infraestructura. Maneja estados de navegación, toma de puestos de mando (Command Posts), selección de objetivos, auto-balance de jugadores/bots y niveles de dificultad (Normal, Élite).
 - **Funciones y direcciones relevantes (dirección | nombre propuesto | confianza | notas):**
-  - `0x00188EF4` | `BotAI_UpdateStateAndBehavior` | Alta | Dispatcher principal de comportamiento; evalúa modo en `this+0x4C` e indexa tabla de saltos.
-  - `0x00188FAC` | `BotAI_LoadBehaviorMode` | Alta | Carga puntero al nombre del modo desde `0x003175B0`.
-  - `0x00189854` | `BotAI_ProcessSubAction` | Media | Rutina auxiliar llamada en bucles de evaluación de amenazas.
-  - `0x002B8AD4` | `BotAI_FindThreatTarget` | Media | Búsqueda de objetivo/amenaza en la escena.
+  - `0x00188A44` | `BotAIController_ctor` | Alta | Constructor de la clase; asigna vtable `0x002F6198`, modo inicial `AttackCpVariant` (`0x3F2` / `1010`), e inicializa 5 slots de amenazas en `999`.
+  - `0x00188C30` | `BotAIController_dtor` | Alta | Destructor virtual.
+  - `0x00188CC0` | `BotAIController_delete` | Alta | Destructor de eliminación (`operator delete`).
+  - `0x00188D58` | `BotAIController_Update` | Alta | Bucle principal por frame: inicializa pathfinding, actualiza posición de objetivo (`0x00189284`), filtra amenazas muertas (`0x00188DB8`) y ejecuta lógica de estado (`0x001893D0`).
+  - `0x00189284` | `BotAI_UpdateTargetTracking` | Alta | Lee posición $(x, y, z)$ del objetivo y calcula ángulo de encaramiento/orientación en `+0x54`.
+  - `0x00188DB8` | `BotAI_FilterThreats` | Alta | Itera sobre los 5 slots de amenazas en `+0x98`, purgando GUIDs `999` y entidades con salud `<= 0.0`.
+  - `0x00189854` | `BotAI_RemoveThreat` | Alta | Elimina una amenaza específica desplazando los elementos del array hacia la izquierda y decrementando `+0xAC`.
+  - `0x0018959C` | `BotAI_GetTargetCoordinates` | Alta | Resuelve entidad objetivo por GUID y obtiene su vector $(x,y,z)$. Si es `999`, retorna posición base en `+0x40`.
+  - `0x00188EF4` | `BotAI_DebugTelemetry` | Alta | Renderizador de telemetría de depuración; evalúa switch de modos (`0x3F0` a `0x3F9`) y muestra objetivos/órdenes en pantalla 3D.
+  - `0x00140E24` | `BotAI_RenderSubAction` | Alta | Indexa la tabla de sub-acciones en `0x00317640` y muestra el estado actual.
+
 - **Estructuras de datos y tamaños:**
-  - `BotActor`:
-    - `+0x4C` (76): `uint32_t currentBehaviorMode` (rango 1008 a 1017).
-    - `+0x98` (152): Puntero a estructura de destino/amenaza.
-    - `+0xAC` (172): Bandera o contador de estado de combate.
-  - Tabla de Modos de Comportamiento (`0x003175B0` en `.data`):
-    - `0x003175B0`: `"Standard Attack"`
-    - `0x003175B4`: `"Attack : CP Variant"` (Command Post)
-    - `0x003175B8`: `"Attack : CTF Variant"` (Capture The Flag)
-    - `0x003175BC`: `"Attack : CTF Variant-b"`
-    - `0x003175C0`: `"Standard Defend"`
-    - `0x003175C4`: `"Defend : Command Post"`
-    - `0x003175C8`: `"Hunter Seeker"`
-    - `0x003175CC`: `"Withdrawl"`
-  - Tabla de Sub-estados de Acción (`0x00317640` en `.data`):
-    - Soldado / Sable: `UNSET`, `RUNNING_RANDOMLY`, `RUNNING_TO_THREAT`, `INCOMING_LIGHTSABER_THROW`, `AT_THREAT`, `MOVING_RANDOMLY`, `PERFORMING_FORCE_MOVE`, `MOVING_FOR_LIGHTSABER_ATTACK`, `PERFORMING_LIGHTSABER_ATTACK`, `MOVING_AWAY_AFTER_LIGHTSABER_ATTACK`, `FINISHED`.
-    - Vehículo: `TAKING_OFF`, `MOVING_FORWARD`, `FOLLOWING`, `CIRCLING_ROUND`, `DOING_STUNT`, `ATTACK_SHIP`, `USING_APPROACH_OBJECT`, `LANDING`.
-- **Dependencias con otros sistemas:** Sistema de armas, sistema de navegación/pathfinding, máquina de estados de vehículos (`Vehicle - ATTACK_TARGET`, `Vehicle - FOLLOW_SHIP`), sincronización de red.
-- **Estado (sin empezar / en análisis / decompilado / verificado):** En análisis.
-- **Dudas abiertas:** Algoritmo de pathfinding utilizado en el Asura Engine (navmesh, waypoints o rejilla de navegación).
+  - `BotActor / BotAIController` (Campos identificados en `0x00188A44` y `0x00188EF4`):
+    - `+0x00`: Puntero a Vtable (`0x002F6198`).
+    - `+0x1C`: Puntero a sub-controlador / componente de entidad.
+    - `+0x28`: `bool initialized` (marca si el pathfinder fue enlazado).
+    - `+0x3C`: `uint32_t currentTargetGuid` (999 = sin objetivo).
+    - `+0x40`: `Vector3 homePosition` $(x, y, z)$.
+    - `+0x4C`: `uint32_t currentBehaviorMode` (rango 1008 a 1017):
+      - `1008` (`0x3F0`): `"Hunter Seeker"`
+      - `1010` (`0x3F2`): `"Attack : CP Variant"` (Puesto de Mando - Predeterminado)
+      - `1011` (`0x3F3`): `"Attack : CTF Variant"` (Bandera)
+      - `1012` (`0x3F4`): `"Attack : CTF Variant-b"`
+      - `1013` (`0x3F5`): `"Defend : Command Post"`
+      - `1014` (`0x3F6`): `"Standard Attack"`
+      - `1015` (`0x3F7`): `"Standard Defend"`
+      - `1016` (`0x3F8`): `"Withdrawl"`
+      - `1017` (`0x3F9`): `"Hero"` (Héroes Jedi/Sith)
+    - `+0x54`: `float targetAngle` (orientación/encaramiento).
+    - `+0x58`: `Vector3 targetPosition` $(x, y, z)$ en `+0x58`, `+0x5C`, `+0x60`.
+    - `+0x98`: `uint32_t threats[5]` (array de hasta 5 GUIDs de amenazas; 999 = slot libre).
+    - `+0xAC`: `uint32_t threatCount` (conteo de amenazas activas, 0 a 5).
+  - Tabla de Sub-estados de Acción (`0x003175B0` y `0x00317640` en `.data`):
+    - Soldado / Combate con Sable: `UNSET` (0), `RUNNING_RANDOMLY` (1), `RUNNING_TO_THREAT` (2), `INCOMING_LIGHTSABER_THROW` (3), `AT_THREAT` (4), `MOVING_RANDOMLY` (5), `PERFORMING_FORCE_MOVE` (6), `MOVING_FOR_LIGHTSABER_ATTACK` (7), `PERFORMING_LIGHTSABER_ATTACK` (8), `MOVING_AWAY_AFTER_LIGHTSABER_ATTACK` (9), `FINISHED` (10).
+
+- **Implementación funcional C++:**
+  - Cabecera: `include/ai/bot_ai.h`.
+  - Implementación: `src/ai/bot_ai.cpp`.
+  - Pruebas y validación: `tests/test_bot_ai.cpp` (`make test`).
+- **Dependencias con otros sistemas:** Sistema de armas, sistema de navegación/pathfinding, gestión de entidades y colisiones.
+- **Estado (sin empezar / en análisis / decompilado / verificado):** Decompilado y verificado (controlador base, modos de comportamiento, gestión de amenazas y seguimiento de objetivos).
+- **Dudas abiertas:** Enlace exacto del sub-controlador de pathfinding en `+0x1C` (`FUN_00152830` / `FUN_00152a98`).
