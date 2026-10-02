@@ -4,9 +4,8 @@ CXX ?= g++
 CXXFLAGS ?= -std=c++17 -Wall -Wextra -O2 -Iinclude
 
 SRCS_CORE = src/core/asura_archive.cpp src/core/resource_mgr.cpp src/core/asura_blueprint.cpp
-SRCS_SYS = src/systems/weapons.cpp
+SRCS_SYS = src/systems/weapons.cpp src/systems/customisation.cpp
 SRCS_AI = src/ai/bot_ai.cpp
-OBJS = $(SRCS_CORE:.cpp=.o) $(SRCS_SYS:.cpp=.o) $(SRCS_AI:.cpp=.o)
 
 all: help
 
@@ -31,15 +30,17 @@ journal:
 build/bin:
 	mkdir -p build/bin
 
-build: build/bin tests/test_weapons_loader.cpp tests/test_bot_ai.cpp tests/test_weapon_attributes.cpp $(SRCS_CORE) $(SRCS_SYS) $(SRCS_AI)
+build: build/bin tests/test_weapons_loader.cpp tests/test_bot_ai.cpp tests/test_weapon_attributes.cpp tests/test_customisation.cpp $(SRCS_CORE) $(SRCS_SYS) $(SRCS_AI)
 	$(CXX) $(CXXFLAGS) $(SRCS_CORE) $(SRCS_SYS) tests/test_weapons_loader.cpp -o build/bin/test_weapons_loader
 	$(CXX) $(CXXFLAGS) $(SRCS_AI) tests/test_bot_ai.cpp -o build/bin/test_bot_ai
 	$(CXX) $(CXXFLAGS) $(SRCS_CORE) $(SRCS_SYS) tests/test_weapon_attributes.cpp -o build/bin/test_weapon_attributes
+	$(CXX) $(CXXFLAGS) $(SRCS_CORE) $(SRCS_SYS) tests/test_customisation.cpp -o build/bin/test_customisation
 
 test: build
 	./build/bin/test_weapons_loader
 	./build/bin/test_bot_ai
 	./build/bin/test_weapon_attributes
+	./build/bin/test_customisation
 
 clean:
 	rm -rf build/bin
