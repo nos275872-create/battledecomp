@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/asura_archive.h"
+#include "core/asura_blueprint.h"
 #include <string>
 #include <vector>
 
@@ -38,11 +39,32 @@ enum class GameEra : uint32_t {
     Classic = 1  // Galactic Civil War (Rebels vs Empire)
 };
 
+// Combat parameters decoded from COMMON.ASR 'BLUE' (Blueprint) chunks
+struct WeaponCombatStats {
+    float rateOfFire{0.0f};           // Delay between shots in seconds (RateOfFire)
+    float reloadTime{0.0f};           // Seconds required to reload (ReloadTime)
+    int32_t ammoPerClip{0};           // Shots per magazine (-1 if overheat based)
+    int32_t maxClips{0};              // Maximum reserve clips (-1 if overheat based)
+    int32_t projectilesPerShot{1};    // Number of projectiles launched per trigger pull
+    float overheatPerShot{0.0f};      // Heat added per discharge (OverheatPershot)
+    float overheatDecay{0.0f};        // Heat cooled down per second (OverheatDecay)
+    float overheatRecoveryTime{0.0f}; // Penalty cooldown delay when overheated (OverheatRecoveryTime)
+    float damageInfantry{0.0f};       // Damage inflicted to humanoid targets (DamageToInfantry)
+    float damageVehicle{0.0f};        // Damage inflicted to armor/vehicles (DamageToVehicle)
+    float projectileSpeed{0.0f};      // Movement velocity in units/second (ProjectileSpeed)
+    float explosionRadius{0.0f};      // Blast area-of-effect radius (ExplosionRadius)
+    float maxRange{0.0f};             // Effective maximum engagement distance (Distance / range)
+    bool isOverheatBased{false};      // True if weapon uses heat mechanics rather than ammo clips
+    std::string projectileName;       // Linked projectile/laser bolt blueprint identifier
+    std::string blueprintTemplate;    // Primary archetype blueprint property name in COMMON.ASR
+};
+
 // Information container for a weapon definition
 struct WeaponInfo {
     WeaponId id;
     const char* internalId;
     std::string localizedName;
+    WeaponCombatStats combatStats;
 };
 
 // Reconstructed functions from EBOOT.BIN:
@@ -57,5 +79,14 @@ std::vector<WeaponInfo> Weapons_GetAllWeapons(core::LanguageId lang);
 
 // Converts WeaponId to standard internal canonical string
 const char* Weapons_GetInternalId(WeaponId id);
+
+// Loads Blueprint data (COMMON.ASR) to populate live weapon stats
+bool Weapons_LoadBlueprints(const std::string& commonAsrPath);
+
+// Retrieves weapon combat attributes and stats
+WeaponCombatStats Weapons_GetCombatStats(WeaponId id);
+
+// Returns the underlying BlueprintArchive (or nullptr if not loaded)
+const core::AsuraBlueprintArchive* Weapons_GetBlueprintArchive();
 
 } // namespace battledecomp::systems
