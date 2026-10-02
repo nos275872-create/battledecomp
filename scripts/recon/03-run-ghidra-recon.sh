@@ -25,6 +25,8 @@ echo "Proyecto: ${PROJECT_DIR}/${PROJECT_NAME}"
 echo "Binario:  ${TARGET_BIN}"
 echo "Log:      ${LOG_FILE}"
 
+export GHIDRA_MAXMEM="2048m"
+
 # Ejecutar Ghidra headless con procesador Allegrex y script de exportación
 if [ -f "${PROJECT_DIR}/${PROJECT_NAME}.gpr" ]; then
     echo "Proyecto existente detectado. Analizando archivo importado..."

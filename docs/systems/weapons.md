@@ -2,10 +2,27 @@
 
 - **Qué hace en el juego:** Gestiona los tipos de armamento (blasters, lanzacohetes, granadas, sables de luz), mecánicas de disparo, cadencia, calentamiento/munición, dispersión, proyectiles y animaciones asociadas. Incluye máquinas de estado de ataque cuerpo a cuerpo para sables (`INCOMING_LIGHTSABER_THROW`, `PERFORMING_LIGHTSABER_ATTACK`).
 - **Funciones y direcciones relevantes (dirección | nombre propuesto | confianza | notas):**
-  - *(En proceso de identificación y mapeo tras análisis Ghidra)*
+  - `0x0017603C` | `Text_InitResourceArchives` | Alta | Inicializa y carga en bucle todos los archivos `.asr` de texto del juego.
+  - `0x00023B7C` | `Asura_ResourceMgr_LoadArchive` | Alta | Función del motor Asura encargada de cargar y registrar contenedores `.asr` en memoria.
+  - `0x00176098` | Bucle de carga de `text/*.asr` | Alta | Itera sobre la tabla `0x00317BE0` hasta encontrar terminador NULL.
 - **Estructuras de datos y tamaños:**
-  - `WeaponDef` / `WeaponInstance` (por identificar en `.rodata` / `.data`).
-  - Recursos vinculados: `HUD_Weapons_Prequel.asr`, `HUD_Weapons_Classic.asr`, `text/weaponnames.asr`.
+  - Tabla de Recursos de Texto (`0x00317BE0` en `.data`):
+    - `0x00317BE0`: `"text/stdtext.asr"`
+    - `0x00317BE4`: `"text/cpnames.asr"`
+    - `0x00317BE8`: `"text/GalacticConquest.asr"`
+    - `0x00317BEC`: `"text/objectnames.asr"`
+    - `0x00317BF0`: `"text/missionobjectives.asr"`
+    - `0x00317BF4`: `"text/vehiclenames.asr"`
+    - `0x00317BF8`: `"text/weaponnames.asr"` (Nombres y descriptores de armas)
+    - `0x00317BFC`: `"text/botnames_character.asr"`
+    - `0x00317C00`: `"text/EndGame_Message.asr"`
+    - `0x00317C04`: `"text/LoadingHints_ConquestGround.asr"`
+    - `0x00317C08`: `"text/LoadingHints_ConquestSpace.asr"`
+    - `0x00317C0C`: `"text/LoadingHints_CTF.asr"`
+    - `0x00317C10`: `"text/LoadingHints_GC.asr"`
+  - Recursos HUD de Armamento:
+    - `"Graphics\HUD_Weapons_Prequel.asr"` (`0x002D82BC`)
+    - `"Graphics\HUD_Weapons_Classic.asr"` (`0x002D82E0`)
 - **Dependencias con otros sistemas:** Sistema de físicas/colisiones, gestión de proyectiles, HUD/UI, perfiles de jugador y bots.
 - **Estado (sin empezar / en análisis / decompilado / verificado):** En análisis.
 - **Dudas abiertas:** Formato binario de los archivos `.asr` para tablas de atributos de armas (si las propiedades están en código o en datos empaquetados).

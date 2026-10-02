@@ -15,8 +15,8 @@ public class ExportSummary extends GhidraScript {
     public void run() throws Exception {
         println("ExportSummary: Iniciando exportación de metadatos...");
 
-        File projectDir = getProjectRootFolder().getProjectLocator().getProjectDir().getParentFile().getParentFile();
-        File exportDir = new File(projectDir, "ghidra/exports");
+        File ghidraDir = getProjectRootFolder().getProjectLocator().getProjectDir().getParentFile().getParentFile();
+        File exportDir = new File(ghidraDir, "exports");
         if (!exportDir.exists()) {
             exportDir.mkdirs();
         }

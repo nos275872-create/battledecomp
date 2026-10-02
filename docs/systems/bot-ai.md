@@ -2,11 +2,27 @@
 
 - **Qué hace en el juego:** Controla el comportamiento autónomo de soldados y droides en combates individuales y multijugador local (Adhoc) e infraestructura. Maneja estados de navegación, toma de puestos de mando (Command Posts), selección de objetivos, auto-balance de jugadores/bots y niveles de dificultad (Normal, Élite).
 - **Funciones y direcciones relevantes (dirección | nombre propuesto | confianza | notas):**
-  - *(En proceso de identificación y mapeo tras análisis Ghidra)*
+  - `0x00188EF4` | `BotAI_UpdateStateAndBehavior` | Alta | Dispatcher principal de comportamiento; evalúa modo en `this+0x4C` e indexa tabla de saltos.
+  - `0x00188FAC` | `BotAI_LoadBehaviorMode` | Alta | Carga puntero al nombre del modo desde `0x003175B0`.
+  - `0x00189854` | `BotAI_ProcessSubAction` | Media | Rutina auxiliar llamada en bucles de evaluación de amenazas.
+  - `0x002B8AD4` | `BotAI_FindThreatTarget` | Media | Búsqueda de objetivo/amenaza en la escena.
 - **Estructuras de datos y tamaños:**
-  - Parámetros de dificultad (`Difficulty level of the MP servers bots [0=Normal, 1=Elite]`).
-  - Lógica de auto-balance de número mínimo de jugadores (`Sets the minimum number of players in a singleplayer game`).
-  - Ficheros de nombres de bots por facción: `text/botnames_character.asr`, `text/botnames_cis.asr`, `text/botnames_republic.asr`, `text/botnames_alliance.asr`.
+  - `BotActor`:
+    - `+0x4C` (76): `uint32_t currentBehaviorMode` (rango 1008 a 1017).
+    - `+0x98` (152): Puntero a estructura de destino/amenaza.
+    - `+0xAC` (172): Bandera o contador de estado de combate.
+  - Tabla de Modos de Comportamiento (`0x003175B0` en `.data`):
+    - `0x003175B0`: `"Standard Attack"`
+    - `0x003175B4`: `"Attack : CP Variant"` (Command Post)
+    - `0x003175B8`: `"Attack : CTF Variant"` (Capture The Flag)
+    - `0x003175BC`: `"Attack : CTF Variant-b"`
+    - `0x003175C0`: `"Standard Defend"`
+    - `0x003175C4`: `"Defend : Command Post"`
+    - `0x003175C8`: `"Hunter Seeker"`
+    - `0x003175CC`: `"Withdrawl"`
+  - Tabla de Sub-estados de Acción (`0x00317640` en `.data`):
+    - Soldado / Sable: `UNSET`, `RUNNING_RANDOMLY`, `RUNNING_TO_THREAT`, `INCOMING_LIGHTSABER_THROW`, `AT_THREAT`, `MOVING_RANDOMLY`, `PERFORMING_FORCE_MOVE`, `MOVING_FOR_LIGHTSABER_ATTACK`, `PERFORMING_LIGHTSABER_ATTACK`, `MOVING_AWAY_AFTER_LIGHTSABER_ATTACK`, `FINISHED`.
+    - Vehículo: `TAKING_OFF`, `MOVING_FORWARD`, `FOLLOWING`, `CIRCLING_ROUND`, `DOING_STUNT`, `ATTACK_SHIP`, `USING_APPROACH_OBJECT`, `LANDING`.
 - **Dependencias con otros sistemas:** Sistema de armas, sistema de navegación/pathfinding, máquina de estados de vehículos (`Vehicle - ATTACK_TARGET`, `Vehicle - FOLLOW_SHIP`), sincronización de red.
 - **Estado (sin empezar / en análisis / decompilado / verificado):** En análisis.
 - **Dudas abiertas:** Algoritmo de pathfinding utilizado en el Asura Engine (navmesh, waypoints o rejilla de navegación).
