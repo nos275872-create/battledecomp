@@ -210,6 +210,7 @@ bool VehicleManager::LoadFromBlueprintArchive(const core::AsuraBlueprintArchive&
                     if (stats.cruisingSpeed <= 0.0f) stats.cruisingSpeed = pStats->cruisingSpeed;
                     if (stats.boostAcc <= 0.0f) stats.boostAcc = pStats->boostAcc;
                     if (stats.maxAcc <= 0.0f) stats.maxAcc = pStats->maxAcc;
+                    if (!pStats->enclosed) stats.enclosed = false;
                 }
             }
         }

@@ -1,11 +1,11 @@
 # Estado actual — battledecomp
 
-- **Última actualización:** 2026-10-02 12:25
+- **Última actualización:** 2026-10-02 12:48
 - **Fase actual y progreso:**
   - **Fase 0 (Montaje del entorno e infraestructura):** 100% COMPLETADA.
   - **Fase 1 (Reconocimiento estático del binario):** 100% COMPLETADA.
   - **Fase 2 (Mapeo de arquitectura y subsistemas):** 100% COMPLETADA.
-  - **Fase 3 (Decompilación funcional profunda e integración de subsistemas):** 15% EN PROGRESO.
+  - **Fase 3 (Decompilación funcional profunda e integración de subsistemas):** 30% EN PROGRESO.
 - **Completado (con enlace a la evidencia):**
   - Entorno verificado y en estado saludable tras reinicio (`make doctor`).
   - Análisis completo de Ghidra Headless completado con éxito ([03-run-ghidra-recon.sh](file:///home/jcgar2/battledecomp/scripts/recon/03-run-ghidra-recon.sh)).
@@ -28,16 +28,23 @@
     - Funciones Allegrex analizadas y decompiladas: `0x0014CC58` (`VehicleAIController`), `0x0014CD68` (`Update`), `0x0014CDF0` (`ClearSubAction`), `0x0014CE38` (`GetTelemetryString`), `0x001513F0` (`AIController`), `0x00234A28` / `0x00234A84` (`Vehicle_OrderDispatcher`).
     - Mapeo de 11 modos de comportamiento tácticos (`VehicleBehaviorMode`), sub-acciones de navegación/maniobra y 10 eventos de mando vehicular (`VehicleEvent`).
     - Implementación C++17 en [include/systems/vehicles.h](file:///home/jcgar2/battledecomp/include/systems/vehicles.h) y [src/systems/vehicles.cpp](file:///home/jcgar2/battledecomp/src/systems/vehicles.cpp), documentado en [docs/systems/vehicles.md](file:///home/jcgar2/battledecomp/docs/systems/vehicles.md) y [ADR-0007](file:///home/jcgar2/battledecomp/docs/decisions/ADR-0007-vehicles-and-turrets-architecture.md).
+  - Decompilación y reconstrucción del subsistema de **Embarque e Interacción Soldado-Vehículo (Boarding & Seating)**:
+    - Mapeo de sub-acciones de aproximación y uso de objetos abordables en el binario: `0x00317600`, `0x003176B0`, `0x003176E0` (`USING_APPROACH_OBJECT`, `LANDING`).
+    - Configuración automática de asientos según blueprint: Conductor (`Driver`), Artilleros (`Gunner` por cada torreta hija) y Pasajeros (`Passenger`, hasta 10 plazas en AT-TE o 7 en LAAT).
+    - Modelo de protección balística: blindaje cerrado con inmunidad total (`Enclosed == true`) vs cabinas/speeders abiertos (`Enclosed == false`, postura `AnimSit` y exposición a disparos a la cabeza y metralla).
+    - Lógica de toma de decisiones de la IA para abordaje y evacuación automática por daño crítico ($\le 15\%$ vida).
+    - Implementación C++17 en [include/systems/boarding.h](file:///home/jcgar2/battledecomp/include/systems/boarding.h) y [src/systems/boarding.cpp](file:///home/jcgar2/battledecomp/src/systems/boarding.cpp), documentado en [docs/systems/boarding.md](file:///home/jcgar2/battledecomp/docs/systems/boarding.md) y [ADR-0008](file:///home/jcgar2/battledecomp/docs/decisions/ADR-0008-soldier-vehicle-interaction.md).
   - Suite de pruebas completa integrada en el Makefile (`make test`), 100% pasando:
     - [tests/test_weapons_loader.cpp](file:///home/jcgar2/battledecomp/tests/test_weapons_loader.cpp): valida 21 armas en 5 idiomas a partir de `WEAPONNAMES.ASR`.
     - [tests/test_bot_ai.cpp](file:///home/jcgar2/battledecomp/tests/test_bot_ai.cpp): valida 100% de la lógica de estados, capacidad de 5 amenazas, eliminación por shift, filtrado y tracking.
     - [tests/test_weapon_attributes.cpp](file:///home/jcgar2/battledecomp/tests/test_weapon_attributes.cpp): valida la carga de los 16 blueprints de `COMMON.ASR` y los atributos de combate de las 21 armas.
     - [tests/test_customisation.cpp](file:///home/jcgar2/battledecomp/tests/test_customisation.cpp): valida las 8 categorías, resolución de costes de Blueprints y cálculo de loadouts de infantería.
     - [tests/test_vehicles.cpp](file:///home/jcgar2/battledecomp/tests/test_vehicles.cpp): valida 117 plantillas de vehículos/torretas, 11 modos de IA vehicular, eventos de mando y ciclo de vida de entidades en tiempo de ejecución.
+    - [tests/test_boarding.cpp](file:///home/jcgar2/battledecomp/tests/test_boarding.cpp): valida la topología de asientos, flujo de abordaje, protección balística en cabinas cerradas/abiertas, evacuación de emergencia de la IA y bajas por destrucción.
 - **Bloqueos / pendiente de mí:** Ninguno.
 - **Próximo paso exacto:**
   1. Conectar la selección de armamento del controlador táctico de bots (`BotAIController`) con la lógica de equipamiento (`SoldierLoadout`) según la distancia y el tipo de amenaza (infantería vs vehículos).
-  2. Integrar la interacción soldado-vehículo (embarque/desembarque de vehículos en combate por parte de los bots).
+  2. Implementar el despachador de proyectiles y colisiones balísticas.
 - **Archivos clave y su ruta:**
   - Binario descifrado: `orig/bin/EBOOT.BIN`
   - Informe de reconocimiento: [docs/knowledge/recon-report.md](file:///home/jcgar2/battledecomp/docs/knowledge/recon-report.md)
