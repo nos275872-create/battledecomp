@@ -40,6 +40,10 @@ fi
 sudo -n chmod -R a+rX "${TARGET_PROCESSOR_DIR}"
 sudo -n rm -rf "${GHIDRA_PATH}/Ghidra/Extensions/ghidra-allegrex"
 
+# Asegurar permisos de ejecución en binarios nativos de Ghidra (decompiler, demangler)
+sudo -n chmod +x "${GHIDRA_PATH}"/Ghidra/Features/Decompiler/os/linux_x86_64/* \
+                 "${GHIDRA_PATH}"/GPL/DemanglerGnu/os/linux_x86_64/* 2>/dev/null || true
+
 # Actualizar registros de versiones y descargas
 grep -q "ghidra-allegrex" "${ENV_DIR}/downloads.md" || \
     printf "| ghidra-allegrex-v21.4.zip | %s | %s | Extensión de soporte para PSP Allegrex en Ghidra |\n" "${DOWNLOAD_URL}" "${SHA_EXT}" >> "${ENV_DIR}/downloads.md"
